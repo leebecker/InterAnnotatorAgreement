@@ -20,6 +20,12 @@ class Agreement:
         pass
 
     def krippendorffAlpha(self, metric=None):
+        """
+        Krippendorff's alpha coefficient is a statistical measure of the agreement achieved when coding a set of units of analysis in terms of the values of a variable.
+        For more info refer to: http://en.wikipedia.org/wiki/Krippendorff's_Alpha
+
+        metric -- the difference function to use when computing alpha
+        """
         if metric is None:
             metric = Agreement.differenceNominal
         items = set([k for r in self.ratings for k in r.keys()])
