@@ -1,4 +1,5 @@
 import unittest
+import stats
 from stats.Agreement import *
 
 class TestAgreement(unittest.TestCase):
@@ -31,6 +32,10 @@ class TestAgreement(unittest.TestCase):
         alpha = self.agreement.krippendorffAlpha(Agreement.differenceNominal)
         self.assertEqual(round(alpha, 3), 0.743)
 
+    def testMetricOrdinal(self):
+        self.agreement = Agreement(self.ratingsMissing) 
+        alpha = self.agreement.krippendorffAlpha(Agreement.differenceOrdinal)
+        self.assertEqual(round(alpha, 3), 0.815)
 
     def testMetricInterval(self):
         self.agreement = Agreement(self.ratingsMissing) 

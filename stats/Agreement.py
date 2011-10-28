@@ -19,9 +19,11 @@ class Agreement:
         self.ratings = rater_responses
         pass
 
+
     def krippendorffAlpha(self, metric=None):
         """
-        Krippendorff's alpha coefficient is a statistical measure of the agreement achieved when coding a set of units of analysis in terms of the values of a variable.
+        Krippendorff's alpha coefficient is a statistical measure of the agreement 
+        achieved when coding a set of units of analysis in terms of the values of a variable.
         For more info refer to: http://en.wikipedia.org/wiki/Krippendorff's_Alpha
 
         metric -- the difference function to use when computing alpha
@@ -32,17 +34,15 @@ class Agreement:
         valueCounts, coincidence = self.computeCoincidenceMatrix(items, self.ratings)
         n = sum(valueCounts.values())
 
-
-        numeratorItems = [coincidence[c][k] * metric(c,k) \
+        numeratorItems = [coincidence[c][k] * metric(c,k, valueCounts) \
             for (c, nc) in valueCounts.iteritems() for (k, nk) in valueCounts.iteritems()]
                 
-        denominatorItems = [nc * nk * metric(c,k)  for (c, nc) in valueCounts.iteritems() for (k, nk) in valueCounts.iteritems()]
+        denominatorItems = [nc * nk * metric(c,k, valueCounts)  for (c, nc) in valueCounts.iteritems() for (k, nk) in valueCounts.iteritems()]
         Do = (n-1) * sum(numeratorItems)
         De = sum(denominatorItems)
         alpha = 1 - Do / De
 
         return alpha
-
 
 
     def computeCoincidenceMatrix(self, items, ratings):
@@ -59,8 +59,9 @@ class Agreement:
     
         ratings - list[dict[item] => label]
     
-        returns - dict[label] => int = valueCounts
-                  dict[(label,label)] => double coincidence value,
+        returns - dict[label] => int = valueCounts -- a lookup table for value frequencies
+                  dict[(label,label)] => double coincidence value, -- a lookup table for
+                        value-value frequencies
         """
     
         coincidence = defaultdict(lambda: defaultdict(int))
@@ -83,20 +84,28 @@ class Agreement:
          
 
     @classmethod
-    def differenceNominal(cls, c, k):
+    def differenceNominal(cls, c, k, valueCounts):
         return int (c != k)
 
-    @classmethod
-    def differenceOrdinal(cls, nc, nk):
-        return 0
 
     @classmethod
-    def differenceInterval(cls, c, k):
+    def differenceOrdinal(cls, c, k, valueCounts):
+        if c >= k: 
+            return 0
+        diff = sum([valueCounts[g] for g in xrange(c+1, k) if g in valueCounts])
+        diff += (valueCounts[c] + valueCounts[k]) / 2.0
+        return math.pow(diff, 2)
+
+
+    @classmethod
+    def differenceInterval(cls, c, k, valueCounts):
         return math.pow(c-k, 2)
 
+
     @classmethod
-    def differenceRatio(cls, c, k):
+    def differenceRatio(cls, c, k, valueCounts):
         return math.pow(float(c-k)/(c+k), 2)
+
 
 class Error(Exception):
     """Base class for exceptions in this module."""
